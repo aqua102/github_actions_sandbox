@@ -28,11 +28,13 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Install Playwright browsers
+        working-directory: playwright
         run: npx playwright install --with-deps
 
       - name: Run Playwright script
+        working-directory: playwright
         run: |
-          node playwright/fetch_h1s.js
+          node fetch_h1s.js
 
       - name: Force-create artifact in workspace
         run: |
@@ -50,3 +52,5 @@ jobs:
           path: |
             ${{ github.workspace }}/h1s.txt
             ${{ github.workspace }}/body.txt
+            ${{ github.workspace }}/playwright/h1s.txt
+            ${{ github.workspace }}/playwright/body.txt
