@@ -7,3 +7,7 @@ def test_greet_default():
 
 def test_greet_name():
     assert greet("Dan") == "Hello, Dan!"
+    
+
+def test_dwc():
+    return "this is test dwc!"
