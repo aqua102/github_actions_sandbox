@@ -1,0 +1,22 @@
+name: Artifact Test
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create simple artifact
+        run: |
+          echo "ARTIFACT_TEST_LINE" > h1s.txt
+          echo "time: $(date)" >> h1s.txt
+          ls -la
+          cat h1s.txt
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: h1-results
+          path: h1s.txt
