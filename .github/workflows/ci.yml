@@ -31,6 +31,10 @@ jobs:
       - name: Run tests
         run: |
           pytest -q | tee pytest-results.txt
+          echo "--- workspace listing ---"
+          ls -la
+          echo "--- pytest-results.txt (first 200 lines) ---"
+          head -n 200 pytest-results.txt || true
 
       - name: Upload pytest logs
         uses: actions/upload-artifact@v3
