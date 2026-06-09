@@ -18,6 +18,11 @@ jobs:
       - name: Show Node
         run: node --version && npm --version
 
+      - name: Create test artifact
+        run: |
+          echo "TEST_H1 - artifact test" > h1s.txt
+          echo "Another H1 example" >> h1s.txt
+
       - name: Install dependencies
         working-directory: playwright
         run: npm ci
