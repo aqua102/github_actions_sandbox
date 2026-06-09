@@ -3,10 +3,17 @@ const { chromium } = require('playwright');
 
 (async () => {
   try {
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     console.log('Navigating to cnn.com');
-    await page.goto('https://www.cnn.com', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    // Give the page more time to load network resources and dynamic content
+    await page.goto('https://www.cnn.com', { waitUntil: 'networkidle', timeout: 120000 });
+
+    // Ensure the body is present and wait for any remaining network activity
+    await page.waitForSelector('body', { timeout: 60000 });
+    await page.waitForLoadState('networkidle', { timeout: 60000 });
+    // Small additional pause to let client-side rendering finish
+    await page.waitForTimeout(2000);
 
     // Capture all H1 texts
     const h1s = await page.$$eval('h1', els => els.map(e => e.innerText.trim()).filter(Boolean));
