@@ -15,14 +15,24 @@ const { chromium } = require('playwright');
     // Small additional pause to let client-side rendering finish
     await page.waitForTimeout(2000);
 
-    // Capture all H1 texts
-    const h1s = await page.$$eval('h1', els => els.map(e => e.innerText.trim()).filter(Boolean));
-    fs.writeFileSync('h1s.txt', h1s.join('\n'), 'utf8');
-    console.log('WROTE h1s.txt with', h1s.length, 'entries');
+    // Prefer content inside elements with class "container" (common in SPA layouts)
+    console.log('Searching for .container elements to scrape');
+    const containers = await page.$$eval('.container', els => els.map(e => e.innerHTML).filter(Boolean));
 
-    // Capture body HTML/text
-    const bodyHtml = await page.$eval('body', el => el.innerHTML);
-    fs.writeFileSync('body.txt', bodyHtml, 'utf8');
+    let bodyHtml = '';
+    let source = '';
+
+    if (containers && containers.length > 0) {
+      source = '.container';
+      bodyHtml = containers.join('\n');
+      console.log('Found', containers.length, '.container elements; using their HTML');
+    } else {
+      source = 'body';
+      bodyHtml = await page.$eval('body', el => el.innerHTML);
+      console.log('No .container elements found; falling back to body');
+    }
+
+    fs.writeFileSync('body.txt', `<!-- source: ${source} -->\n` + bodyHtml, 'utf8');
     console.log('WROTE body.txt length', bodyHtml.length);
 
     await browser.close();

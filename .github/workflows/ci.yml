@@ -20,8 +20,8 @@ jobs:
 
       - name: Create test artifact
         run: |
-          echo "TEST_H1 - artifact test" > h1s.txt
-          echo "Another H1 example" >> h1s.txt
+          echo "TEST_BODY - artifact test" > body.txt
+          echo "Another body example" >> body.txt
 
       - name: Install dependencies
         working-directory: playwright
@@ -38,19 +38,17 @@ jobs:
 
       - name: Force-create artifact in workspace
         run: |
-          echo "BRUTE_FORCE_ARTIFACT" > "${GITHUB_WORKSPACE}/h1s.txt"
-          echo "Forced at $(date) by $(whoami)" >> "${GITHUB_WORKSPACE}/h1s.txt"
+          echo "BRUTE_FORCE_BODY_ARTIFACT" > "${GITHUB_WORKSPACE}/body.txt"
+          echo "Forced at $(date) by $(whoami)" >> "${GITHUB_WORKSPACE}/body.txt"
           ls -la "${GITHUB_WORKSPACE}"
-          echo "--- h1s.txt contents ---"
-          cat "${GITHUB_WORKSPACE}/h1s.txt" || true
+          echo "--- body.txt contents ---"
+          cat "${GITHUB_WORKSPACE}/body.txt" || true
 
-      - name: Upload h1 results
+      - name: Upload scrape results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: h1-results
+          name: scrape-results
           path: |
-            ${{ github.workspace }}/h1s.txt
             ${{ github.workspace }}/body.txt
-            ${{ github.workspace }}/playwright/h1s.txt
             ${{ github.workspace }}/playwright/body.txt
