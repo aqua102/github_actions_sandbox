@@ -30,15 +30,19 @@ jobs:
         run: python -m pip install --upgrade pip pytest
       - name: Run tests
         run: |
-          pytest -q | tee pytest-results.txt
+          pytest -q --junitxml=pytest-results.xml | tee pytest-results.txt
           echo "--- workspace listing ---"
           ls -la
           echo "--- pytest-results.txt (first 200 lines) ---"
           head -n 200 pytest-results.txt || true
+          echo "--- pytest-results.xml (first 200 lines) ---"
+          head -n 200 pytest-results.xml || true
 
       - name: Upload pytest logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pytest-logs
-          path: pytest-results.txt
+          path: |
+            pytest-results.txt
+            pytest-results.xml
