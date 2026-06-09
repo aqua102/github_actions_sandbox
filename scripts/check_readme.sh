@@ -13,4 +13,5 @@ if [ "$words" -lt 3 ]; then
 fi
 
 echo "README.md looks good ($words words)"
+echo "AND THIS IS DAN ADDING SOMETHING TO THE JOB!"
 exit 0
