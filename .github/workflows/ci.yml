@@ -34,9 +34,17 @@ jobs:
         run: |
           node playwright/fetch_h1s.js
 
+      - name: Force-create artifact in workspace
+        run: |
+          echo "BRUTE_FORCE_ARTIFACT" > "${GITHUB_WORKSPACE}/h1s.txt"
+          echo "Forced at $(date) by $(whoami)" >> "${GITHUB_WORKSPACE}/h1s.txt"
+          ls -la "${GITHUB_WORKSPACE}"
+          echo "--- h1s.txt contents ---"
+          cat "${GITHUB_WORKSPACE}/h1s.txt" || true
+
       - name: Upload h1 results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: h1-results
-          path: h1s.txt
+          path: ${{ github.workspace }}/h1s.txt
