@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  check_readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make check script executable
+        run: chmod +x scripts/check_readme.sh || true
+      - name: Check README
+        run: ./scripts/check_readme.sh
