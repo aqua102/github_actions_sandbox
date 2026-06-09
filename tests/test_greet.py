@@ -10,4 +10,4 @@ def test_greet_name():
     
 
 def test_dwc():
-    return "this is test dwc!"
+    assert "this is test dwc!"
