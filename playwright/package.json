@@ -1,0 +1,11 @@
+{
+  "name": "ci-playwright",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "fetch": "node fetch_h1s.js"
+  },
+  "dependencies": {
+    "playwright": "^1.36.0"
+  }
+}
