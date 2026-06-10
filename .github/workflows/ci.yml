@@ -33,6 +33,21 @@ jobs:
         run: |
           node fetch_h1s.js
 
+      - name: Show generated files
+        run: |
+          echo "--- repo root files ---"
+          ls -la "${GITHUB_WORKSPACE}" || true
+          echo "--- playwright dir files ---"
+          ls -la "${GITHUB_WORKSPACE}/playwright" || true
+          echo "--- gh-artifacts at repo root ---"
+          ls -la "${GITHUB_WORKSPACE}/gh-artifacts" || true
+          echo "--- playwright/gh-artifacts ---"
+          ls -la "${GITHUB_WORKSPACE}/playwright/gh-artifacts" || true
+          echo "--- cat playwright/h3s.txt if exists ---"
+          cat "${GITHUB_WORKSPACE}/playwright/h3s.txt" || true
+          echo "--- cat playwright/gh-artifacts/h1s.txt if exists ---"
+          cat "${GITHUB_WORKSPACE}/playwright/gh-artifacts/h1s.txt" || true
+
       # Removed force-create artifact step; upload will include scraper outputs
 
       - name: Upload scrape results
@@ -45,3 +60,4 @@ jobs:
             ${{ github.workspace }}/h3s.txt
             ${{ github.workspace }}/playwright/body.txt
             ${{ github.workspace }}/playwright/h3s.txt
+            ${{ github.workspace }}/playwright/gh-artifacts/h1s.txt
