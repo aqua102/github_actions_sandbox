@@ -2,57 +2,49 @@ const fs = require('fs');
 const { chromium } = require('playwright');
 
 (async () => {
+  let browser;
+  let exitCode = 0;
   try {
-    const browser = await chromium.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
+    // Run headless for CI
+    browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     console.log('Navigating to Yahoo Finance');
-    // Give the page more time to load network resources and dynamic content
-    await page.goto('https://finance.yahoo.com/', { waitUntil: 'networkidle', timeout: 120000 });
+    // Use DOMContentLoaded to avoid waiting for long-running network requests,
+    // then wait specifically for the target selector.
+    await page.goto('https://finance.yahoo.com/', { waitUntil: 'domcontentloaded', timeout: 120000 });
+    console.log('DOM content loaded');
 
-    // Ensure the body is present and wait for any remaining network activity
+    // Wait for page body and then for the specific headline selector
     await page.waitForSelector('body', { timeout: 60000 });
-    await page.waitForLoadState('networkidle', { timeout: 60000 });
-    // Small additional pause to let client-side rendering finish
-    await page.waitForTimeout(2000);
-
-    // Prefer content inside elements with class "container" (common in SPA layouts)
-    console.log('Searching for .container elements to scrape');
-    const containers = await page.$$eval('.container', els => els.map(e => e.innerHTML).filter(Boolean));
-
-    let bodyHtml = '';
-    let source = '';
-
-    if (containers && containers.length > 0) {
-      source = '.container';
-      bodyHtml = containers.join('\n');
-      console.log('Found', containers.length, '.container elements; using their HTML');
-    } else {
-      source = 'body';
-      bodyHtml = await page.$eval('body', el => el.innerHTML);
-      console.log('No .container elements found; falling back to body');
-    }
-
-    // Extract H3s after page load (user requested h3s from Yahoo Finance)
-    console.log('Extracting h3 elements');
-    let h3s = [];
     try {
-      h3s = await page.$$eval('h3', els => els.map(e => e.innerText.trim()).filter(Boolean));
-      console.log('Found', h3s.length, 'h3 elements');
+      await page.waitForSelector('a.hyperlink-wrapper h3', { timeout: 120000 });
     } catch (e) {
-      console.warn('Error extracting h3s:', String(e));
+      console.warn('Target selector a.hyperlink-wrapper h3 not found within timeout');
     }
 
-    fs.writeFileSync('h3s.txt', h3s.join('\n'), 'utf8');
-    console.log('WROTE h3s.txt with', h3s.length, 'entries (source:', source + ')');
+    console.log('Searching for a.hyperlink-wrapper h3 elements');
+    const headlines = await page.locator('a.hyperlink-wrapper h3').allTextContents();
 
-    fs.writeFileSync('body.txt', `<!-- source: ${source} -->\n` + bodyHtml, 'utf8');
-    console.log('WROTE body.txt length', bodyHtml.length);
+    const bodyText = headlines.join('\n');
 
-    await browser.close();
-    process.exit(0);
+    fs.writeFileSync('h3s.txt', bodyText, 'utf8');
+    console.log('WROTE h3s.txt with', headlines.length, 'entries');
+
+    // also write to CI artifacts directory if present
+    try {
+      fs.writeFileSync('gh-artifacts/h1s.txt', bodyText, 'utf8');
+      console.log('WROTE gh-artifacts/h1s.txt');
+    } catch (e) {
+      // ignore if directory doesn't exist
+    }
+
+    exitCode = 0;
   } catch (err) {
     console.error('Error fetching page:', err);
-    try { fs.writeFileSync('body.txt', 'ERROR: ' + String(err), 'utf8'); } catch (e) {}
-    process.exit(2);
+    try { fs.writeFileSync('h3s.txt', 'ERROR: ' + String(err), 'utf8'); } catch (e) {}
+    exitCode = 2;
+  } finally {
+    if (browser) await browser.close().catch(() => {});
+    process.exit(exitCode);
   }
 })();
