@@ -5,9 +5,9 @@ const { chromium } = require('playwright');
   try {
     const browser = await chromium.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
     const page = await browser.newPage();
-    console.log('Navigating to cnn.com');
+    console.log('Navigating to Yahoo Finance');
     // Give the page more time to load network resources and dynamic content
-    await page.goto('https://www.cnn.com', { waitUntil: 'networkidle', timeout: 120000 });
+    await page.goto('https://finance.yahoo.com/', { waitUntil: 'networkidle', timeout: 120000 });
 
     // Ensure the body is present and wait for any remaining network activity
     await page.waitForSelector('body', { timeout: 60000 });
@@ -31,6 +31,19 @@ const { chromium } = require('playwright');
       bodyHtml = await page.$eval('body', el => el.innerHTML);
       console.log('No .container elements found; falling back to body');
     }
+
+    // Extract H3s after page load (user requested h3s from Yahoo Finance)
+    console.log('Extracting h3 elements');
+    let h3s = [];
+    try {
+      h3s = await page.$$eval('h3', els => els.map(e => e.innerText.trim()).filter(Boolean));
+      console.log('Found', h3s.length, 'h3 elements');
+    } catch (e) {
+      console.warn('Error extracting h3s:', String(e));
+    }
+
+    fs.writeFileSync('h3s.txt', h3s.join('\n'), 'utf8');
+    console.log('WROTE h3s.txt with', h3s.length, 'entries (source:', source + ')');
 
     fs.writeFileSync('body.txt', `<!-- source: ${source} -->\n` + bodyHtml, 'utf8');
     console.log('WROTE body.txt length', bodyHtml.length);
