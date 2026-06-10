@@ -18,10 +18,7 @@ jobs:
       - name: Show Node
         run: node --version && npm --version
 
-      - name: Create test artifact
-        run: |
-          echo "TEST_BODY - artifact test" > body.txt
-          echo "Another body example" >> body.txt
+      # Removed brute-force test artifact creation; rely on scraper outputs
 
       - name: Install dependencies
         working-directory: playwright
@@ -36,13 +33,7 @@ jobs:
         run: |
           node fetch_h1s.js
 
-      - name: Force-create artifact in workspace
-        run: |
-          echo "BRUTE_FORCE_BODY_ARTIFACT" > "${GITHUB_WORKSPACE}/body.txt"
-          echo "Forced at $(date) by $(whoami)" >> "${GITHUB_WORKSPACE}/body.txt"
-          ls -la "${GITHUB_WORKSPACE}"
-          echo "--- body.txt contents ---"
-          cat "${GITHUB_WORKSPACE}/body.txt" || true
+      # Removed force-create artifact step; upload will include scraper outputs
 
       - name: Upload scrape results
         if: always()
@@ -51,4 +42,6 @@ jobs:
           name: scrape-results
           path: |
             ${{ github.workspace }}/body.txt
+            ${{ github.workspace }}/h3s.txt
             ${{ github.workspace }}/playwright/body.txt
+            ${{ github.workspace }}/playwright/h3s.txt
